@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -58,14 +58,9 @@ func redirect(prefix, port string) func(http.ResponseWriter, *http.Request) {
 				w.Header().Add(k, v)
 			}
 		}
-		body, err := ioutil.ReadAll(resp.Body)
+		_, err = io.Copy(w, resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
-		t, err := template.New("resp").Parse("{{.}}")
-		if err != nil {
-			log.Fatal(err)
-		}
-		t.Execute(w, template.HTML(string(body)))
 	}
 }
