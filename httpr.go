@@ -51,7 +51,9 @@ func redirect(prefix, port string) func(http.ResponseWriter, *http.Request) {
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("proxy: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
 		for k, vv := range resp.Header {
 			for _, v := range vv {
@@ -60,7 +62,9 @@ func redirect(prefix, port string) func(http.ResponseWriter, *http.Request) {
 		}
 		_, err = io.Copy(w, resp.Body)
 		if err != nil {
-			log.Fatal(err)
+			log.Printf("proxy: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
 		}
 	}
 }
