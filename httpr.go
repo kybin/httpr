@@ -44,6 +44,7 @@ func main() {
 
 func redirect(prefix, port string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Print(r.URL.Path)
 		req, err := http.NewRequest(r.Method, "http://localhost:"+port+"/"+strings.TrimPrefix(r.URL.Path, prefix), r.Body)
 		if err != nil {
 			log.Fatal(err)
