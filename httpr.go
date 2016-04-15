@@ -52,11 +52,15 @@ func redirect(prefix, port string) func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				w.Header().Add(k, v)
+			}
+		}
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
-		// TODO: write response header
 		t, err := template.New("resp").Parse("{{.}}")
 		if err != nil {
 			log.Fatal(err)
