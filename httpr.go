@@ -23,7 +23,6 @@ func init() {
 	}
 	s := strings.TrimRight(string(b), "\r\n")
 	ss := strings.Split(s, "\n")
-	portmap := make(map[string]string)
 	for i, l := range ss {
 		if l == "" {
 			continue
@@ -45,23 +44,25 @@ func init() {
 		fmt.Println("_ will bind all prefix except specified. should exist")
 		os.Exit(1)
 	}
+	fmt.Println(portmap)
 }
 
 func main() {
 	http.HandleFunc("/", redirect)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":80", nil))
 }
 
 func redirect(w http.ResponseWriter, r *http.Request) {
-	log.Print(r.URL.Path)
+	r.ParseForm()
 	port, _ := portmap["_"]
-	hh := strings.Split(r.URL.Host, ".")
+	hh := strings.Split(r.Host, ".")
 	if len(hh) == 3 {
 		p, ok := portmap[hh[0]]
 		if ok {
 			port = p
 		}
 	}
+	log.Println(port, r.URL.Path)
 	req, err := http.NewRequest(r.Method, "http://localhost:"+port+r.URL.Path, r.Body)
 	if err != nil {
 		log.Fatal(err)
