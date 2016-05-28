@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"strings"
 )
@@ -48,40 +48,23 @@ func init() {
 }
 
 func main() {
-	http.HandleFunc("/", redirect)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		director := func(req *http.Request) {
+			port, _ := portmap["_"]
+			hh := strings.Split(r.Host, ".")
+			if len(hh) == 3 {
+				p, ok := portmap[hh[0]]
+				if ok {
+					port = p
+				}
+			}
+			req.URL.Scheme = "http"
+			req.URL.Host = "localhost:" + port
+			req.URL.Path = r.URL.Path
+			req.URL.RawQuery = r.URL.RawQuery
+		}
+		proxy := &httputil.ReverseProxy{Director: director}
+		proxy.ServeHTTP(w, r)
+	})
 	log.Fatal(http.ListenAndServe(":80", nil))
-}
-
-func redirect(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	port, _ := portmap["_"]
-	hh := strings.Split(r.Host, ".")
-	if len(hh) == 3 {
-		p, ok := portmap[hh[0]]
-		if ok {
-			port = p
-		}
-	}
-	log.Println(port, r.URL.Path)
-	req, err := http.NewRequest(r.Method, "http://localhost:"+port+r.URL.Path, r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("proxy: %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	for k, vv := range resp.Header {
-		for _, v := range vv {
-			w.Header().Add(k, v)
-		}
-	}
-	_, err = io.Copy(w, resp.Body)
-	if err != nil {
-		log.Printf("proxy: %v", err)
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
 }
