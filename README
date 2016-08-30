@@ -1,0 +1,36 @@
+== httpr ==
+simple http reverse proxy
+
+=== overview ===
+It currently only support http protocol.
+It is not very efficient, I guess.
+But it works.
+Please make it better with your pull request.
+
+=== PORTMAP ===
+To use httpr, please make PORTMAP file in same directory that httpr will run.
+
+Each line of the file should be `prefix port` format.
+Default `_ port` line should always exist.
+
+Following is the example.
+`
+_ 8080
+hello 8081
+hi 8082
+here 8083
+`
+
+When the org name is "example.org", It will binding to...
+
+example.org -> localhost:8080
+www.example.org -> localhost:8080
+{any_prefix}.example.org -> localhost:8080
+
+hello.example.org -> localhost:8081
+hi.example.org -> localhost:8082
+here.example.org -> localhost:8083
+
+=== run ===
+Install Go.
+Then use `go get` and `go install`.
