@@ -24,7 +24,6 @@ here 8083
 When the org name is "example.org", It will binding to...
 
 example.org -> localhost:8080
-www.example.org -> localhost:8080
 {any_prefix}.example.org -> localhost:8080
 
 hello.example.org -> localhost:8081
